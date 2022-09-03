@@ -28,12 +28,16 @@ time.sleep(delayTime)
 
 #截取游戏窗口
 im = pyautogui.screenshot(region=(wulin.Coordinate.Base[0]+wulin.Coordinate.BaseFix[0], wulin.Coordinate.Base[1]+wulin.Coordinate.BaseFix[1], wulin.Coordinate.Width ,wulin.Coordinate.Height))
-# 保存图片
-im.save(r'.\ScreenShots\my_screenshot.png')
 
-time.sleep(delayTime*2)
+# 保存图片
+#im.save(r'.\ScreenShots\my_screenshot.png')
+
+#time.sleep(delayTime*2)
 
 wulin.HerbGathering.GetItemSelectStatus()
+wulin.HerbGathering.GetHarvestStatus()
+logging.info('草药收获数字0出现次数:')
+logging.info(wulin.HerbGathering.Harvest.count(0))
 
 print('finish')
 #for i in range(0,8):
