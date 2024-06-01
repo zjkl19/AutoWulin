@@ -14,6 +14,7 @@ class AutoWhackAMole:
         self.image_dir = "images"
         self.time_limit = time_limit
         self.start_time = None
+        self.default_resolution = (656, 539)  # 默认分辨率
 
     def get_window_resolution(self):
         windows = gw.getWindowsWithTitle(self.game_title)
@@ -40,9 +41,17 @@ class AutoWhackAMole:
 
     def load_templates(self):
         templates = {}
-        templates['snake'] = cv2.imread(os.path.join(self.image_dir, 'snake.png'), 0)
-        templates['female_mole'] = cv2.imread(os.path.join(self.image_dir, 'female_mole.png'), 0)
-        templates['iron_ore'] = cv2.imread(os.path.join(self.image_dir, 'iron_ore.png'), 0)
+        scaling_factor_x = self.resolution[0] / self.default_resolution[0]
+        scaling_factor_y = self.resolution[1] / self.default_resolution[1]
+
+        def load_and_resize(image_name):
+            image = cv2.imread(os.path.join(self.image_dir, image_name), 0)
+            resized_image = cv2.resize(image, (0, 0), fx=scaling_factor_x, fy=scaling_factor_y)
+            return resized_image
+
+        templates['snake'] = load_and_resize('snake.png')
+        templates['female_mole'] = load_and_resize('female_mole.png')
+        templates['iron_ore'] = load_and_resize('iron_ore.png')
         return templates
 
     def find_moles_and_snakes(self, screenshot, templates):
@@ -60,9 +69,8 @@ class AutoWhackAMole:
         click_x = self.window.left + position[0]
         click_y = self.window.top + position[1]
         pyautogui.moveTo(click_x, click_y)
-        
         pyautogui.mouseDown()
-        time.sleep(0.05) 
+        time.sleep(0.03) 
         pyautogui.mouseUp()
 
     def run(self):
@@ -86,7 +94,9 @@ class AutoWhackAMole:
                 for name, position in results:
                     if name == 'iron_ore':
                         self.whack_mole(position)
-                time.sleep(0.1)  # 增加时间间隔
+                    if name == 'snake':
+                        self.whack_mole(position)
+                time.sleep(0.03)  # 增加时间间隔
         except Exception as e:
             print(f"错误: {e}")
 
