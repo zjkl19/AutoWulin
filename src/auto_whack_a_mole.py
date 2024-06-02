@@ -6,6 +6,7 @@ import os
 import threading
 import time
 import logging
+import json5
 
 class AutoWhackAMole:
     def __init__(self, game_title, config):
@@ -80,11 +81,23 @@ class AutoWhackAMole:
         pyautogui.mouseDown()
         time.sleep(self.click_interval)  # 使用配置文件中的 click_interval
         pyautogui.mouseUp()
+        # 将鼠标移到屏幕的一角或不干扰的区域
+        pyautogui.moveTo(self.window.left + self.window.width - 10, self.window.top + 10)
 
     def run(self):
+        def time_limit_exceeded():
+            time.sleep(self.time_limit)
+            print("时间已到。退出程序...")
+            logging.info("时间已到。退出程序...")
+            os._exit(0)
+
         self.start_time = time.time()
         logging.info(f"游戏开始时间: {time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(self.start_time))}")
-        
+
+        timer_thread = threading.Thread(target=time_limit_exceeded)
+        timer_thread.daemon = True
+        timer_thread.start()
+
         try:
             resolution = self.get_window_resolution()
             logging.info(f"游戏分辨率: {resolution}")
@@ -103,9 +116,9 @@ class AutoWhackAMole:
 
 if __name__ == "__main__":
     script_dir = os.path.dirname(os.path.abspath(__file__))
-    config_path = os.path.abspath(os.path.join(script_dir, '../config.json'))
+    config_path = os.path.abspath(os.path.join(script_dir, '../config.json5'))
     with open(config_path, 'r', encoding='utf-8') as f:
-        config = json.load(f)
+        config = json5.load(f)
 
     auto_whack_a_mole = AutoWhackAMole("武林群侠传", config['whack_a_mole'])
     auto_whack_a_mole.run()

@@ -1,7 +1,7 @@
 import tkinter as tk
 from tkinter import ttk
 from tkinter import messagebox
-import json
+import json5
 import os
 import sys
 import shutil
@@ -24,10 +24,10 @@ class AutoWulinApp(tk.Tk):
         logging.basicConfig(filename=os.path.join(log_dir, 'gui.log'), level=logging.INFO)
 
         # 加载配置文件
-        config_path = os.path.abspath('./config.json')
-        self.config_backup_path = os.path.abspath('./config_backup.json')
+        config_path = os.path.abspath('./config.json5')
+        self.config_backup_path = os.path.abspath('./config_backup.json5')
         with open(config_path, 'r', encoding='utf-8') as f:
-            self.config = json.load(f)
+            self.config = json5.load(f)
         
         self.config_path = config_path
 
@@ -100,25 +100,27 @@ class AutoWulinApp(tk.Tk):
 
         ttk.Label(tab, text="修改配置文件").grid(row=0, column=0, padx=10, pady=10)
         self.new_config_content = tk.Text(tab, wrap=tk.WORD, height=20, width=80)
-        self.new_config_content.insert(tk.END, json.dumps(self.config, indent=4, ensure_ascii=False))
+        self.new_config_content.insert(tk.END, json5.dumps(self.config, indent=4, ensure_ascii=False))
         self.new_config_content.grid(row=1, column=0, padx=10, pady=10)
 
-        ttk.Button(tab, text="保存修改", command=self.save_config).grid(row=2, column=0, padx=10, pady=10)
-        ttk.Button(tab, text="备份日志文件", command=self.backup_config).grid(row=3, column=0, padx=10, pady=10)
+        # 添加保存和备份按钮到同一行
+        button_frame = ttk.Frame(tab)
+        button_frame.grid(row=2, column=0, padx=10, pady=10)
+        
+        ttk.Button(button_frame, text="保存修改", command=self.save_config).grid(row=0, column=0, padx=5)
+        ttk.Button(button_frame, text="备份配置文件", command=self.backup_config).grid(row=0, column=1, padx=5)
 
     def save_config(self):
         new_config = self.new_config_content.get("1.0", tk.END)
         try:
-            new_config_json = json.loads(new_config)
-            # 备份现有配置文件
-            shutil.copyfile(self.config_path, self.config_backup_path)
+            new_config_json = json5.loads(new_config)
             # 写入新配置文件
             with open(self.config_path, 'w', encoding='utf-8') as f:
-                json.dump(new_config_json, f, indent=4, ensure_ascii=False)
+                json5.dump(new_config_json, f, indent=4, ensure_ascii=False)
             self.config = new_config_json
-            messagebox.showinfo("保存成功", "配置文件已保存并备份。")
-            logging.info("配置文件已保存并备份。")
-        except json.JSONDecodeError as e:
+            messagebox.showinfo("保存成功", "配置文件已保存。")
+            logging.info("配置文件已保存。")
+        except json5.JSONDecodeError as e:
             messagebox.showerror("保存失败", f"配置文件格式错误: {e}")
             logging.error(f"配置文件格式错误: {e}")
 

@@ -1,0 +1,22 @@
+{
+    // 自动打地鼠配置
+    "whack_a_mole": {
+      "threshold": 0.8,       // 图像匹配阈值
+      "time_limit": 15,       // 游戏时间限制（秒）
+      "sleep_interval": 0.03, // 循环间隔时间（秒）
+      "click_interval": 0.03,  // 点击间隔时间（秒）
+    },
+    // 自动钓鱼配置
+    "fishing": {
+      "time_limit": 60,       // 游戏时间限制（秒）
+    },
+    // 自动采药配置
+    "herb_collecting": {
+      "time_limit": 60,       // 游戏时间限制（秒）
+    },
+    // 自动赌博配置
+    "gambling": {
+      "time_limit": 60,       // 游戏时间限制（秒）
+    }
+  }
+  
