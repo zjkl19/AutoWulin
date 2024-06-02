@@ -20,7 +20,8 @@ class AutoWhackAMole:
         self.click_interval = config.get('click_interval', 0.03)
         self.start_time = None
         self.default_resolution = (656, 539)  # 默认分辨率
-
+        self.running = True
+        
         # 日志设置
         log_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '../logs'))
         os.makedirs(log_dir, exist_ok=True)
@@ -82,14 +83,14 @@ class AutoWhackAMole:
         time.sleep(self.click_interval)  # 使用配置文件中的 click_interval
         pyautogui.mouseUp()
         # 将鼠标移到屏幕的一角或不干扰的区域
-        pyautogui.moveTo(self.window.left + self.window.width - 10, self.window.top + 10)
+        pyautogui.moveTo(self.window.left+200, self.window.top+400)
 
     def run(self):
         def time_limit_exceeded():
             time.sleep(self.time_limit)
             print("时间已到。退出程序...")
             logging.info("时间已到。退出程序...")
-            os._exit(0)
+            self.running = False
 
         self.start_time = time.time()
         logging.info(f"游戏开始时间: {time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(self.start_time))}")
@@ -103,7 +104,7 @@ class AutoWhackAMole:
             logging.info(f"游戏分辨率: {resolution}")
             print(f"游戏分辨率: {resolution}")
             templates = self.load_templates()
-            while True:
+            while self.running:
                 screenshot = self.capture_screen()
                 results = self.find_moles_and_snakes(screenshot, templates)
                 for name, position in results:
