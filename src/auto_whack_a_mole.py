@@ -21,7 +21,7 @@ class AutoWhackAMole:
         self.start_time = None
         self.default_resolution = (656, 539)  # 默认分辨率
         self.running = True
-        
+
         # 日志设置
         log_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '../logs'))
         os.makedirs(log_dir, exist_ok=True)
@@ -83,7 +83,7 @@ class AutoWhackAMole:
         time.sleep(self.click_interval)  # 使用配置文件中的 click_interval
         pyautogui.mouseUp()
         # 将鼠标移到屏幕的一角或不干扰的区域
-        pyautogui.moveTo(self.window.left+200, self.window.top+400)
+        pyautogui.moveTo(self.window.left + self.window.width - 10, self.window.top + self.window.height - 10)
 
     def run(self):
         def time_limit_exceeded():
