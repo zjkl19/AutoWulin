@@ -1,4 +1,3 @@
-import json
 import pygetwindow as gw
 import pyautogui
 import cv2
@@ -6,17 +5,25 @@ import numpy as np
 import os
 import threading
 import time
+import logging
 
 class AutoWhackAMole:
     def __init__(self, game_title, config):
         self.game_title = game_title
         self.window = None
         self.resolution = None
-        self.image_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '../images'))
+        self.image_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '../images/whack_a_mole'))
         self.time_limit = config['time_limit']
         self.threshold = config['threshold']
+        self.sleep_interval = config.get('sleep_interval', 0.03)
+        self.click_interval = config.get('click_interval', 0.03)
         self.start_time = None
         self.default_resolution = (656, 539)  # 默认分辨率
+
+        # 日志设置
+        log_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '../logs'))
+        os.makedirs(log_dir, exist_ok=True)
+        logging.basicConfig(filename=os.path.join(log_dir, 'auto_whack_a_mole.log'), level=logging.INFO)
 
     def get_window_resolution(self):
         windows = gw.getWindowsWithTitle(self.game_title)
@@ -71,22 +78,16 @@ class AutoWhackAMole:
         click_y = self.window.top + position[1]
         pyautogui.moveTo(click_x, click_y)
         pyautogui.mouseDown()
-        time.sleep(0.03)
+        time.sleep(self.click_interval)  # 使用配置文件中的 click_interval
         pyautogui.mouseUp()
 
     def run(self):
-        def time_limit_exceeded():
-            time.sleep(self.time_limit)
-            print("时间已到。退出程序...")
-            os._exit(0)
-
         self.start_time = time.time()
-        timer_thread = threading.Thread(target=time_limit_exceeded)
-        timer_thread.daemon = True
-        timer_thread.start()
-
+        logging.info(f"游戏开始时间: {time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(self.start_time))}")
+        
         try:
             resolution = self.get_window_resolution()
+            logging.info(f"游戏分辨率: {resolution}")
             print(f"游戏分辨率: {resolution}")
             templates = self.load_templates()
             while True:
@@ -95,8 +96,9 @@ class AutoWhackAMole:
                 for name, position in results:
                     if name == 'iron_ore' or name == 'snake':
                         self.whack_mole(position)
-                time.sleep(0.03)  # 增加时间间隔
+                time.sleep(self.sleep_interval)  # 使用配置文件中的 sleep_interval
         except Exception as e:
+            logging.error(f"错误: {e}")
             print(f"错误: {e}")
 
 if __name__ == "__main__":

@@ -1,7 +1,9 @@
 {
   "whack_a_mole": {
     "threshold": 0.8,
-    "time_limit": 60
+    "time_limit": 60,
+    "sleep_interval": 0.03,
+    "click_interval": 0.03
   },
   "fishing": {
     "time_limit": 60
