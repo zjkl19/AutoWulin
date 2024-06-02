@@ -1,3 +1,4 @@
+import json
 import pygetwindow as gw
 import pyautogui
 import cv2
@@ -7,12 +8,13 @@ import threading
 import time
 
 class AutoWhackAMole:
-    def __init__(self, game_title, time_limit):
+    def __init__(self, game_title, config):
         self.game_title = game_title
         self.window = None
         self.resolution = None
-        self.image_dir = "images"
-        self.time_limit = time_limit
+        self.image_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '../images'))
+        self.time_limit = config['time_limit']
+        self.threshold = config['threshold']
         self.start_time = None
         self.default_resolution = (656, 539)  # 默认分辨率
 
@@ -59,8 +61,7 @@ class AutoWhackAMole:
         results = []
         for name, template in templates.items():
             res = cv2.matchTemplate(gray_screenshot, template, cv2.TM_CCOEFF_NORMED)
-            threshold = 0.8
-            loc = np.where(res >= threshold)
+            loc = np.where(res >= self.threshold)
             for pt in zip(*loc[::-1]):
                 results.append((name, pt))
         return results
@@ -70,7 +71,7 @@ class AutoWhackAMole:
         click_y = self.window.top + position[1]
         pyautogui.moveTo(click_x, click_y)
         pyautogui.mouseDown()
-        time.sleep(0.03) 
+        time.sleep(0.03)
         pyautogui.mouseUp()
 
     def run(self):
@@ -92,15 +93,17 @@ class AutoWhackAMole:
                 screenshot = self.capture_screen()
                 results = self.find_moles_and_snakes(screenshot, templates)
                 for name, position in results:
-                    if name == 'iron_ore':
-                        self.whack_mole(position)
-                    if name == 'snake':
+                    if name == 'iron_ore' or name == 'snake':
                         self.whack_mole(position)
                 time.sleep(0.03)  # 增加时间间隔
         except Exception as e:
             print(f"错误: {e}")
 
 if __name__ == "__main__":
-    time_limit = int(input("请输入时间限制（秒）: "))
-    auto_whack_a_mole = AutoWhackAMole("武林群侠传", time_limit)
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    config_path = os.path.abspath(os.path.join(script_dir, '../config.json'))
+    with open(config_path, 'r', encoding='utf-8') as f:
+        config = json.load(f)
+
+    auto_whack_a_mole = AutoWhackAMole("武林群侠传", config['whack_a_mole'])
     auto_whack_a_mole.run()
