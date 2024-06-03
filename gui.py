@@ -46,23 +46,33 @@ class AutoWulinApp(tk.Tk):
         tab = ttk.Frame(self.notebook)
         self.notebook.add(tab, text="自动打地鼠")
 
+        # 阈值设置
         ttk.Label(tab, text="阈值:").grid(row=0, column=0, padx=10, pady=10)
         self.whack_a_mole_threshold = tk.DoubleVar(value=self.config['whack_a_mole']['threshold'])
         ttk.Entry(tab, textvariable=self.whack_a_mole_threshold).grid(row=0, column=1, padx=10, pady=10)
 
-        ttk.Label(tab, text="时间限制（秒）:").grid(row=1, column=0, padx=10, pady=10)
+        # 时间限制设置
+        ttk.Label(tab, text="时间限制 (秒):").grid(row=1, column=0, padx=10, pady=10)
         self.whack_a_mole_time_limit = tk.IntVar(value=self.config['whack_a_mole']['time_limit'])
         ttk.Entry(tab, textvariable=self.whack_a_mole_time_limit).grid(row=1, column=1, padx=10, pady=10)
 
-        ttk.Label(tab, text="休眠间隔（秒）:").grid(row=2, column=0, padx=10, pady=10)
-        self.whack_a_mole_sleep_interval = tk.DoubleVar(value=self.config['whack_a_mole'].get('sleep_interval', 0.03))
+        # 间隔时间设置
+        ttk.Label(tab, text="间隔时间 (秒):").grid(row=2, column=0, padx=10, pady=10)
+        self.whack_a_mole_sleep_interval = tk.DoubleVar(value=self.config['whack_a_mole']['sleep_interval'])
         ttk.Entry(tab, textvariable=self.whack_a_mole_sleep_interval).grid(row=2, column=1, padx=10, pady=10)
 
-        ttk.Label(tab, text="点击间隔（秒）:").grid(row=3, column=0, padx=10, pady=10)
-        self.whack_a_mole_click_interval = tk.DoubleVar(value=self.config['whack_a_mole'].get('click_interval', 0.03))
+        # 单击间隔设置
+        ttk.Label(tab, text="单击间隔 (秒):").grid(row=3, column=0, padx=10, pady=10)
+        self.whack_a_mole_click_interval = tk.DoubleVar(value=self.config['whack_a_mole']['click_interval'])
         ttk.Entry(tab, textvariable=self.whack_a_mole_click_interval).grid(row=3, column=1, padx=10, pady=10)
 
-        ttk.Button(tab, text="开始", command=self.start_whack_a_mole).grid(row=4, column=0, columnspan=2, padx=10, pady=10)
+        # 是否启用复制窗口
+        ttk.Label(tab, text="启用复制窗口:").grid(row=4, column=0, padx=10, pady=10)
+        self.enable_copy_window = tk.BooleanVar(value=self.config['whack_a_mole'].get('enable_copy_window', False))
+        ttk.Checkbutton(tab, variable=self.enable_copy_window).grid(row=4, column=1, padx=10, pady=10)
+
+        # 开始按钮
+        ttk.Button(tab, text="开始自动打地鼠", command=self.start_whack_a_mole).grid(row=5, column=0, columnspan=2, padx=10, pady=10)
 
     def create_fishing_tab(self):
         tab = ttk.Frame(self.notebook)
@@ -138,9 +148,9 @@ class AutoWulinApp(tk.Tk):
             'threshold': self.whack_a_mole_threshold.get(),
             'time_limit': self.whack_a_mole_time_limit.get(),
             'sleep_interval': self.whack_a_mole_sleep_interval.get(),
-            'click_interval': self.whack_a_mole_click_interval.get()
+            'click_interval': self.whack_a_mole_click_interval.get(),
+            'enable_copy_window': self.enable_copy_window.get()
         }
-        # 这里添加自动打地鼠的逻辑
         auto_whack_a_mole = AutoWhackAMole("武林群侠传", config)
         auto_whack_a_mole.run()
 

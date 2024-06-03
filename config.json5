@@ -5,6 +5,7 @@
       "time_limit": 15,       // 游戏时间限制（秒）
       "sleep_interval": 0.03, // 循环间隔时间（秒）
       "click_interval": 0.03,  // 点击间隔时间（秒）
+      "enable_copy_window": false // 是否启用复制窗口
     },
     // 自动钓鱼配置
     "fishing": {

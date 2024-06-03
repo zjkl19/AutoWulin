@@ -6,6 +6,9 @@ import os
 import threading
 import time
 import logging
+import tkinter as tk
+from PIL import Image, ImageTk
+import queue
 import json5
 
 class AutoWhackAMole:
@@ -18,14 +21,42 @@ class AutoWhackAMole:
         self.threshold = config['threshold']
         self.sleep_interval = config.get('sleep_interval', 0.03)
         self.click_interval = config.get('click_interval', 0.03)
+        self.enable_copy_window = config.get('enable_copy_window', False)
         self.start_time = None
-        self.default_resolution = (656, 539)  # 默认分辨率
+        self.default_resolution = (656, 539)
         self.running = True
+        self.copy_window = None
+        self.update_queue = queue.Queue()
 
         # 日志设置
         log_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '../logs'))
         os.makedirs(log_dir, exist_ok=True)
         logging.basicConfig(filename=os.path.join(log_dir, 'auto_whack_a_mole.log'), level=logging.INFO)
+
+        if self.enable_copy_window:
+            self.init_copy_window()
+
+    def init_copy_window(self):
+        self.copy_root = tk.Toplevel()
+        self.copy_root.title("复制窗口")
+        self.copy_label = tk.Label(self.copy_root)
+        self.copy_label.pack()
+        self.copy_root.after(100, self.process_queue)
+
+    def process_queue(self):
+        try:
+            image = self.update_queue.get_nowait()
+            img = Image.fromarray(image)
+            img_tk = ImageTk.PhotoImage(img)
+            self.copy_label.config(image=img_tk)
+            self.copy_label.image = img_tk
+        except queue.Empty:
+            pass
+        self.copy_root.after(100, self.process_queue)
+
+    def update_copy_window(self, image):
+        if self.enable_copy_window:
+            self.update_queue.put(image)
 
     def get_window_resolution(self):
         windows = gw.getWindowsWithTitle(self.game_title)
@@ -82,7 +113,7 @@ class AutoWhackAMole:
         pyautogui.mouseDown()
         time.sleep(self.click_interval)  # 使用配置文件中的 click_interval
         pyautogui.mouseUp()
-        # 将鼠标移到屏幕的一角或不干扰的区域
+        # 将鼠标移到窗口的右下角
         pyautogui.moveTo(self.window.left + self.window.width - 10, self.window.top + self.window.height - 10)
 
     def run(self):
@@ -103,6 +134,16 @@ class AutoWhackAMole:
             resolution = self.get_window_resolution()
             logging.info(f"游戏分辨率: {resolution}")
             print(f"游戏分辨率: {resolution}")
+
+            screen_width, screen_height = pyautogui.size()
+            if self.enable_copy_window:
+                if self.window.left + self.window.width + resolution[0] > screen_width:
+                    print("警告：游戏窗口太大，复制窗口放不下！")
+                    logging.warning("游戏窗口太大，复制窗口放不下！")
+                    self.enable_copy_window = False  # 禁用复制窗口
+                else:
+                    self.copy_root.geometry(f"{resolution[0]}x{resolution[1]}+{self.window.left + self.window.width + 10}+{self.window.top}")
+
             templates = self.load_templates()
             while self.running:
                 screenshot = self.capture_screen()
@@ -110,10 +151,16 @@ class AutoWhackAMole:
                 for name, position in results:
                     if name == 'iron_ore' or name == 'snake':
                         self.whack_mole(position)
+                        # 框出特征物体
+                        cv2.rectangle(screenshot, position, (position[0] + templates[name].shape[1], position[1] + templates[name].shape[0]), (0, 255, 0), 2)
+                self.update_copy_window(screenshot)
                 time.sleep(self.sleep_interval)  # 使用配置文件中的 sleep_interval
         except Exception as e:
             logging.error(f"错误: {e}")
             print(f"错误: {e}")
+
+        if self.enable_copy_window:
+            self.copy_root.mainloop()
 
 if __name__ == "__main__":
     script_dir = os.path.dirname(os.path.abspath(__file__))

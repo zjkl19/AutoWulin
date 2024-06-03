@@ -56,3 +56,47 @@ INFO:root:时间已到。退出程序...
 INFO:root:游戏开始时间: 2024-06-02 23:28:26
 INFO:root:游戏分辨率: (656, 539)
 INFO:root:时间已到。退出程序...
+INFO:root:游戏开始时间: 2024-06-03 20:46:47
+INFO:root:游戏分辨率: (656, 539)
+ERROR:root:错误: image "pyimage1" doesn't exist
+INFO:root:游戏开始时间: 2024-06-03 20:46:58
+INFO:root:游戏分辨率: (656, 539)
+ERROR:root:错误: image "pyimage2" doesn't exist
+INFO:root:时间已到。退出程序...
+INFO:root:时间已到。退出程序...
+INFO:root:游戏开始时间: 2024-06-03 20:50:59
+INFO:root:游戏分辨率: (656, 539)
+INFO:root:时间已到。退出程序...
+INFO:root:游戏开始时间: 2024-06-03 20:51:21
+INFO:root:游戏分辨率: (656, 539)
+ERROR:root:错误: image "pyimage1" doesn't exist
+INFO:root:游戏开始时间: 2024-06-03 21:00:50
+INFO:root:游戏分辨率: (656, 539)
+INFO:root:时间已到。退出程序...
+INFO:root:游戏开始时间: 2024-06-03 21:02:44
+INFO:root:游戏分辨率: (656, 539)
+ERROR:root:错误: image "pyimage1" doesn't exist
+INFO:root:游戏开始时间: 2024-06-03 21:07:51
+INFO:root:游戏分辨率: (656, 539)
+INFO:root:时间已到。退出程序...
+INFO:root:游戏开始时间: 2024-06-03 21:08:16
+INFO:root:游戏分辨率: (656, 539)
+INFO:root:时间已到。退出程序...
+INFO:root:游戏开始时间: 2024-06-03 21:09:31
+INFO:root:游戏分辨率: (656, 539)
+INFO:root:时间已到。退出程序...
+INFO:root:游戏开始时间: 2024-06-03 21:19:35
+INFO:root:游戏分辨率: (656, 539)
+INFO:root:时间已到。退出程序...
+INFO:root:游戏开始时间: 2024-06-03 21:20:03
+INFO:root:游戏分辨率: (656, 539)
+INFO:root:时间已到。退出程序...
+INFO:root:游戏开始时间: 2024-06-03 21:21:02
+INFO:root:游戏分辨率: (656, 528)
+INFO:root:时间已到。退出程序...
+INFO:root:游戏开始时间: 2024-06-03 21:21:28
+INFO:root:游戏分辨率: (656, 528)
+INFO:root:时间已到。退出程序...
+INFO:root:游戏开始时间: 2024-06-03 21:22:20
+INFO:root:游戏分辨率: (656, 539)
+INFO:root:时间已到。退出程序...
