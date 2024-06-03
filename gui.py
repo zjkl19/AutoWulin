@@ -6,6 +6,7 @@ import os
 import sys
 import shutil
 import logging
+import threading
 
 # 添加src目录到sys.path中
 sys.path.append(os.path.join(os.path.dirname(__file__), 'src'))
@@ -72,7 +73,7 @@ class AutoWulinApp(tk.Tk):
         ttk.Checkbutton(tab, variable=self.enable_copy_window).grid(row=4, column=1, padx=10, pady=10)
 
         # 开始按钮
-        ttk.Button(tab, text="开始自动打地鼠", command=self.start_whack_a_mole).grid(row=5, column=0, columnspan=2, padx=10, pady=10)
+        ttk.Button(tab, text="开始自动打地鼠", command=self.start_whack_a_mole_thread).grid(row=6, column=0, columnspan=2, padx=10, pady=10)
 
     def create_fishing_tab(self):
         tab = ttk.Frame(self.notebook)
@@ -152,7 +153,10 @@ class AutoWulinApp(tk.Tk):
             'enable_copy_window': self.enable_copy_window.get()
         }
         auto_whack_a_mole = AutoWhackAMole("武林群侠传", config)
-        auto_whack_a_mole.run()
+        auto_whack_a_mole.start()
+
+    def start_whack_a_mole_thread(self):
+        threading.Thread(target=self.start_whack_a_mole).start()
 
     def start_fishing(self):
         time_limit = self.fishing_time_limit.get()

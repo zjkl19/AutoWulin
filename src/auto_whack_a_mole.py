@@ -25,7 +25,6 @@ class AutoWhackAMole:
         self.start_time = None
         self.default_resolution = (656, 539)
         self.running = True
-        self.copy_window = None
         self.update_queue = queue.Queue()
 
         # 日志设置
@@ -45,11 +44,12 @@ class AutoWhackAMole:
 
     def process_queue(self):
         try:
-            image = self.update_queue.get_nowait()
-            img = Image.fromarray(image)
-            img_tk = ImageTk.PhotoImage(img)
-            self.copy_label.config(image=img_tk)
-            self.copy_label.image = img_tk
+            if not self.update_queue.empty():
+                image = self.update_queue.get_nowait()
+                img = Image.fromarray(image)
+                img_tk = ImageTk.PhotoImage(img)
+                self.copy_label.config(image=img_tk)
+                self.copy_label.image = img_tk
         except queue.Empty:
             pass
         self.copy_root.after(100, self.process_queue)
@@ -145,6 +145,7 @@ class AutoWhackAMole:
                     self.copy_root.geometry(f"{resolution[0]}x{resolution[1]}+{self.window.left + self.window.width + 10}+{self.window.top}")
 
             templates = self.load_templates()
+
             while self.running:
                 screenshot = self.capture_screen()
                 results = self.find_moles_and_snakes(screenshot, templates)
@@ -155,12 +156,17 @@ class AutoWhackAMole:
                         cv2.rectangle(screenshot, position, (position[0] + templates[name].shape[1], position[1] + templates[name].shape[0]), (0, 255, 0), 2)
                 self.update_copy_window(screenshot)
                 time.sleep(self.sleep_interval)  # 使用配置文件中的 sleep_interval
+
         except Exception as e:
             logging.error(f"错误: {e}")
             print(f"错误: {e}")
 
+    def start(self):
         if self.enable_copy_window:
-            self.copy_root.mainloop()
+            self.copy_root.after(100, self.process_queue)
+        
+        game_logic_thread = threading.Thread(target=self.run)
+        game_logic_thread.start()
 
 if __name__ == "__main__":
     script_dir = os.path.dirname(os.path.abspath(__file__))
@@ -169,4 +175,4 @@ if __name__ == "__main__":
         config = json5.load(f)
 
     auto_whack_a_mole = AutoWhackAMole("武林群侠传", config['whack_a_mole'])
-    auto_whack_a_mole.run()
+    auto_whack_a_mole.start()
