@@ -71,6 +71,11 @@ class AutoWulinApp(tk.Tk):
         ttk.Label(tab, text="启用复制窗口:").grid(row=4, column=0, padx=10, pady=10)
         self.enable_copy_window = tk.BooleanVar(value=self.config['whack_a_mole'].get('enable_copy_window', False))
         ttk.Checkbutton(tab, variable=self.enable_copy_window).grid(row=4, column=1, padx=10, pady=10)
+        
+        # OCR 判断游戏是否终止
+        ttk.Label(tab, text="OCR 判断游戏是否终止:").grid(row=5, column=0, padx=10, pady=10)
+        self.enable_ocr_detection = tk.BooleanVar(value=self.config['whack_a_mole'].get('enable_ocr_detection', False))
+        ttk.Checkbutton(tab, variable=self.enable_ocr_detection).grid(row=5, column=1, padx=10, pady=10)
 
         # 开始按钮
         ttk.Button(tab, text="开始自动打地鼠", command=self.start_whack_a_mole_thread).grid(row=6, column=0, columnspan=2, padx=10, pady=10)
@@ -150,7 +155,8 @@ class AutoWulinApp(tk.Tk):
             'time_limit': self.whack_a_mole_time_limit.get(),
             'sleep_interval': self.whack_a_mole_sleep_interval.get(),
             'click_interval': self.whack_a_mole_click_interval.get(),
-            'enable_copy_window': self.enable_copy_window.get()
+            'enable_copy_window': self.enable_copy_window.get(),
+            'enable_ocr_detection': self.enable_ocr_detection.get()
         }
         auto_whack_a_mole = AutoWhackAMole("武林群侠传", config)
         auto_whack_a_mole.start()

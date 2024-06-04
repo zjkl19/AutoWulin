@@ -9,7 +9,7 @@ import logging
 import tkinter as tk
 from PIL import Image, ImageTk
 import queue
-import json5
+from paddleocr import PaddleOCR
 
 class AutoWhackAMole:
     def __init__(self, game_title, config):
@@ -22,6 +22,7 @@ class AutoWhackAMole:
         self.sleep_interval = config.get('sleep_interval', 0.03)
         self.click_interval = config.get('click_interval', 0.03)
         self.enable_copy_window = config.get('enable_copy_window', False)
+        self.enable_ocr_detection = config.get('enable_ocr_detection', False)
         self.start_time = None
         self.default_resolution = (656, 539)
         self.running = True
@@ -35,8 +36,17 @@ class AutoWhackAMole:
         if self.enable_copy_window:
             self.init_copy_window()
 
+        # 初始化OCR对象，指定本地模型路径
+        self.ocr = PaddleOCR(det_model_dir='./inference/ch_ppocr_server_v2.0_det_infer',
+                             rec_model_dir='./inference/ch_ppocr_server_v2.0_rec_infer',
+                             cls_model_dir='./inference/ch_ppocr_mobile_v2.0_cls_infer',
+                             use_angle_cls=True, lang='ch')
+
+        # 获取窗口分辨率
+        self.get_window_resolution()
+
     def init_copy_window(self):
-        self.copy_root = tk.Toplevel()
+        self.copy_root = tk.Tk()
         self.copy_root.title("复制窗口")
         self.copy_label = tk.Label(self.copy_root)
         self.copy_label.pack()
@@ -44,7 +54,7 @@ class AutoWhackAMole:
 
     def process_queue(self):
         try:
-            if not self.update_queue.empty():
+            while not self.update_queue.empty():
                 image = self.update_queue.get_nowait()
                 img = Image.fromarray(image)
                 img_tk = ImageTk.PhotoImage(img)
@@ -63,6 +73,7 @@ class AutoWhackAMole:
         if windows:
             self.window = windows[0]
             self.resolution = (self.window.width, self.window.height)
+            logging.info(f"找到窗口 {self.game_title}，分辨率: {self.resolution}")
             return self.resolution
         else:
             raise Exception(f"未找到标题为 {self.game_title} 的窗口。")
@@ -116,12 +127,46 @@ class AutoWhackAMole:
         # 将鼠标移到窗口的右下角
         pyautogui.moveTo(self.window.left + self.window.width - 10, self.window.top + self.window.height - 10)
 
-    def run(self):
+    def run_game_logic(self):
         def time_limit_exceeded():
             time.sleep(self.time_limit)
             print("时间已到。退出程序...")
             logging.info("时间已到。退出程序...")
             self.running = False
+
+        def ocr_check():
+            screenshot_counter = 0
+            while self.running:
+                screenshot = self.capture_screen()
+                region = screenshot[int(self.resolution[1] * 2 / 3):, :int(self.resolution[0] / 4)]
+                
+                # 保存调试截图
+                screenshot_counter += 1
+                debug_image_path = os.path.join("debug_screenshots", f"ocr_debug_{screenshot_counter}.png")
+                os.makedirs(os.path.dirname(debug_image_path), exist_ok=True)
+                cv2.imwrite(debug_image_path, region)
+                logging.info(f"保存调试截图: {debug_image_path}")
+
+                result = self.ocr.ocr(region, cls=True)
+                logging.info(f"OCR结果: {result}")
+                
+                # 检查OCR结果是否为None
+                if result is None:
+                    logging.warning("OCR结果为None")
+                    continue
+
+                for line in result:
+                    if line is None:
+                        continue
+                    for word in line:
+                        if word is None:
+                            continue
+                        if '回合终了' in word[1][0]:
+                            print("检测到'回合终了'，脚本终止")
+                            logging.info("检测到'回合终了'，脚本终止")
+                            self.running = False
+                            return
+                time.sleep(1)  # 每秒检查一次
 
         self.start_time = time.time()
         logging.info(f"游戏开始时间: {time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(self.start_time))}")
@@ -129,6 +174,11 @@ class AutoWhackAMole:
         timer_thread = threading.Thread(target=time_limit_exceeded)
         timer_thread.daemon = True
         timer_thread.start()
+
+        if self.enable_ocr_detection:
+            ocr_thread = threading.Thread(target=ocr_check)
+            ocr_thread.daemon = True
+            ocr_thread.start()
 
         try:
             resolution = self.get_window_resolution()
@@ -163,16 +213,16 @@ class AutoWhackAMole:
 
     def start(self):
         if self.enable_copy_window:
-            self.copy_root.after(100, self.process_queue)
+            threading.Thread(target=self.copy_root.mainloop).start()
         
-        game_logic_thread = threading.Thread(target=self.run)
+        game_logic_thread = threading.Thread(target=self.run_game_logic)
         game_logic_thread.start()
 
 if __name__ == "__main__":
     script_dir = os.path.dirname(os.path.abspath(__file__))
     config_path = os.path.abspath(os.path.join(script_dir, '../config.json5'))
     with open(config_path, 'r', encoding='utf-8') as f:
-        config = json5.load(f)
+        config = json.load(f)
 
     auto_whack_a_mole = AutoWhackAMole("武林群侠传", config['whack_a_mole'])
     auto_whack_a_mole.start()
