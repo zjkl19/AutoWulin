@@ -27,11 +27,23 @@ class AutoWhackAMole:
         self.default_resolution = (656, 539)
         self.running = True
         self.update_queue = queue.Queue()
+        self.item_filters = {
+            'iron_ore': config.get('iron_ore', False),
+            'copper_ore': config.get('copper_ore', False),
+            'red_crystal': config.get('red_crystal', False),
+            'black_crystal': config.get('black_crystal', False),
+            'blue_crystal': config.get('blue_crystal', False),
+            'white_crystal': config.get('white_crystal', False),
+            'treasure': config.get('treasure', False)
+        }
 
         # 日志设置
         log_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '../logs'))
         os.makedirs(log_dir, exist_ok=True)
         logging.basicConfig(filename=os.path.join(log_dir, 'auto_whack_a_mole.log'), level=logging.INFO)
+
+        # 设置 PaddleOCR 日志级别为 WARNING
+        logging.getLogger('ppocr').setLevel(logging.WARNING)
 
         if self.enable_copy_window:
             self.init_copy_window()
@@ -51,6 +63,7 @@ class AutoWhackAMole:
         self.copy_label = tk.Label(self.copy_root)
         self.copy_label.pack()
         self.copy_root.after(100, self.process_queue)
+        threading.Thread(target=self.copy_root.mainloop).start()
 
     def process_queue(self):
         try:
@@ -105,6 +118,12 @@ class AutoWhackAMole:
         templates['snake'] = load_and_resize('snake.png')
         templates['female_mole'] = load_and_resize('female_mole.png')
         templates['iron_ore'] = load_and_resize('iron_ore.png')
+        templates['copper_ore'] = load_and_resize('copper_ore.png')
+        templates['red_crystal'] = load_and_resize('red_crystal.png')
+        templates['black_crystal'] = load_and_resize('black_crystal.png')
+        templates['blue_crystal'] = load_and_resize('blue_crystal.png')
+        templates['white_crystal'] = load_and_resize('white_crystal.png')
+        templates['treasure'] = load_and_resize('treasure.png')
         return templates
 
     def find_moles_and_snakes(self, screenshot, templates):
@@ -212,9 +231,6 @@ class AutoWhackAMole:
             print(f"错误: {e}")
 
     def start(self):
-        if self.enable_copy_window:
-            threading.Thread(target=self.copy_root.mainloop).start()
-        
         game_logic_thread = threading.Thread(target=self.run_game_logic)
         game_logic_thread.start()
 
